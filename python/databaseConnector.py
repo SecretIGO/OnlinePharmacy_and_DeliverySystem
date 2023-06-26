@@ -16,7 +16,7 @@ print(fullName)
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="",
+  password="root",
   database = "db_onphar"
 )
 
@@ -24,14 +24,11 @@ print(mydb)
 
 mycursor = mydb.cursor()
 
-name = "admin"
-desc = "this user has the ability to view and manage website activities and also view all users"
+name = "courier"
+desc = "this user has the ability to view parcel information and delivery address of the package"
 
-sql = ("INSERT INTO role (rolename, roledescription) VALUES (%s,%s)")
+sql = ("INSERT INTO roles (rolename, roledescription) VALUES (%s,%s)")
 val = (name, desc)
 
-mycursor.execute(sql, val)
-
-x = 1
-
-print(x)
+mycursor.execute(sql,val)
+mycursor.execute("COMMIT")
