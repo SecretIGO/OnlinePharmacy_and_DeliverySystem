@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+        <script src="https://cdn.jsdelivr.net/npm/pyodide@0.23.3/pyodide.min.js"></script>
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    </head>
+    <body>
+        <form action="sc_signup.html" method="POST">
+            
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" placeholder="username"><br>
+            
+            <label for="password">Password</label>
+            <input type="password" name="pwd" id="pwd" placeholder="password"> <br>
+
+            <input type="submit" value="login" id="loginbtn">
+        </form>
+        
+        <py-script>
+            print("hi")
+        </py-script>
+    </body>
+</html>
