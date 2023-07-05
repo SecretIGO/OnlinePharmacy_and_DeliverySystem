@@ -3,7 +3,7 @@
 # ______________________________________________________________________________________________ ' ITEMS '
 # - - - - - - - - - - - CALCULATING ITEM PRICE
 
-def get_itemPrice_byQty(item, qty):
+def get_itemPrice_byQty(item, qty, mycursor):
   query = ("SELECT ")
 
 

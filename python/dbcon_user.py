@@ -1,6 +1,8 @@
-import re
-
 # dbcon_user local lib for accessing data for users
+  # all logics for users
+
+import re
+from datetime import datetime
 
 # ______________________________________________________________________________________________ < ' USERS ' >
 # - - - - - - - - - - - FINDING USER IN THE DATABASE (signin)
@@ -9,10 +11,31 @@ import re
     # -> eg. testUser and testuser as username is detected as an active username when testUser is the only one in the db
     # FIXED!
 
-def find_username(username, mycursor):
+def get_roleCount(mycursor):
+  query = "SELECT COUNT(*) FROM roles"
+  mycursor.execute(query)
+
+  return mycursor.fetchone()[0]
+
+
+def determine_role(role):
+  if role == 1:
+    return "user_customer"
+  if role == 2:
+    return "user_pharmacy_staff"
+  if role == 3:
+    return "user_courier"
+  if role == 4:
+    return "user_pharmacy_manager"
+  if role == 5:
+    return "user_admin"
+  
+def find_username(username, role, mycursor):
 
   try:
-    query = ("SELECT username FROM users WHERE BINARY username=%s")
+    str_role = determine_role(role)
+    
+    query = ("SELECT username FROM " + str_role + " WHERE BINARY username=%s")
     mycursor.execute(query, (username,))
     result = mycursor.fetchone()
 
@@ -57,18 +80,23 @@ def validate_password(password):
   # Check if the password contains at least one digit
   if not re.search(r'\d', password):
     return False
-  
-  # If all the conditions are met, the password is valid
+
   return True
 
 # ______________________________________________________________________________________________
 # - - - - - - - - - - - ADDING USER TO THE DATABASE (signup)
 
-  # NOTE : signup from main signup screen add role to be automatically 2 for buyer
+  # NOTE : roles
+    # 1 = customer 
+    # 2 = p_staff
+    # 3 = courier
+    # 4 = p_manager
+    # 5 = admin
 
-def addUser(fullname, username, password, email, mycursor):
+def addUser(fullname, username, password, email, role, mycursor):
   try:
-    input_username = find_username(username, mycursor)
+    str_role = determine_role(role)
+    input_username = find_username(username, role, mycursor)
     
     is_valid = validate_email(email)
     if not is_valid:
@@ -84,8 +112,10 @@ def addUser(fullname, username, password, email, mycursor):
       print("user already exists")
     else:
       print("adding user into the database")
-      query = ("INSERT INTO users (firstname, middlename, lastname, username, password, email, id_role, activeStatus) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
-      val = (fullname[0], fullname[1], fullname[2], username, password, email, 2, 1)
+      date = datetime.today().strftime('%Y-%m-%d')
+
+      query = ("INSERT INTO " + str_role + " (firstname, middlename, lastname, username, password, email, joinDate, id_role, activeStatus) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)")
+      val = (fullname[0], fullname[1], fullname[2], username, password, email, date, role, 1)
 
       mycursor.execute(query, val)
       mycursor.execute("COMMIT")
@@ -100,8 +130,12 @@ def addUser(fullname, username, password, email, mycursor):
 
 def login_user(username, password, mycursor):
   try:
-    input_username = find_username(username, mycursor)
-    
+    temp = 0
+    while temp <= get_roleCount(mycursor) or input_username == None:
+      str_role = determine_role(temp)
+      input_username = find_username(username, str_role, mycursor)
+      temp += 1
+
     if input_username:
       query = ("SELECT password FROM users WHERE username=%s")
       mycursor.execute(query, input_username)      
@@ -151,8 +185,10 @@ def get_userInformation(username, mycursor):
 # ______________________________________________________________________________________________
 # - - - - - - - - - - - GETTING THE COUNT OF ALL CURRENTLY ONLINE USERS
 
-def get_activeUserCount(mycursor):
-  query = ("SELECT COUNT(activeStatus) FROM users WHERE activeStatus = true")
+def get_allActiveUserCount(role, mycursor):
+  str_role = determine_role(role)
+
+  query = ("SELECT COUNT(activeStatus) FROM " + str_role + " WHERE activeStatus = true")
   mycursor.execute(query)
   activeUsers = mycursor.fetchone()[0]
 
@@ -164,9 +200,17 @@ def get_activeUserCount(mycursor):
 # - - - - - - - - - - - GETTING THE COUNT OF ALL USERS
 
 def get_userCount(mycursor):
-  query = ("SELECT COUNT(*) FROM users")
-  mycursor.execute(query)
-  numof_users = mycursor.fetchone()[0]
+  numof_users = 0
+  temp = 1
+  i = 0
+  while i < get_roleCount(mycursor):
+    str_role = determine_role(temp)
+    
+    query = ("SELECT COUNT(*) FROM " + str_role)
+    mycursor.execute(query)
+    numof_users += mycursor.fetchone()[0]
+    temp+=1
+    i+=1
 
   print("num of users : ", numof_users)
 
